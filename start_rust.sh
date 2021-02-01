@@ -58,14 +58,11 @@ if [ -f "/steamcmd/rust/Compiler.x86_x64" ]; then
   find "${compilerdir:?}" -type f -name "Compiler.x86_x64" -delete
 fi
 
-
-
 #DEFAULT VARIABLES.
 #################
 
 RCONWEB="1"
 echo "false" >/wipe
-
 
 #CHECHING PERFORMANCE MODE.
 ##########################
@@ -118,27 +115,14 @@ STARTMODE="0"
 OXIDE_UPDATE="0"
 fi
 
-
-
 #SELECT MAP SIZE
 ###############
-
-if [ "$MAPSIZE" = "tiny" ]; then
-MPSIZE="1000"
-elif [ "$MAPSIZE" = "small" ]; then
-MPSIZE="2000"
-elif [ "$MAPSIZE" = "medium" ]; then
-MPSIZE="3500"
-elif [ "$MAPSIZE" = "large" ]; then
-MPSIZE="6000"
-elif [ "$MAPSIZE" = "massive" ]; then
-MPSIZE="8000"
-else
-echo "Error: Please select map size"
+if [ -z $MAPSIZE ]; then
+echo "Error: Please enter map size"
 exit
+else
+echo "Settimg MAPSIZE to $MAPSIZE"
 fi
-
-
 
 # AUTO PORT FORWARDING
 #####################
@@ -161,8 +145,6 @@ echo ""
 sleep 3
 fi
 
-
-
 #RUN AUTO WIPE
 ##############
 
@@ -175,8 +157,6 @@ echo ""
 chmod +x Autowipe.sh
 ./Autowipe.sh &
 fi
-
-
 
 #RUN ANNOUNCEMENTS
 ###################
@@ -205,15 +185,11 @@ else
 ANNOUNCE="1"
 fi
 
-
-
 if [ "$ANNOUNCE" = "1" ]; then
 chmod +x apps/announce_app/app.js
 ./apps/announce_app/app.js &
 echo "Announcements is enabled"
 fi
-
-
 
 #RUN WIPE TITLE
 ##############
@@ -226,13 +202,10 @@ else
 echo "Wiped title is disabled"
 fi
 
-
-
 # REMOVE OLD LOCK
 ################
 
 rm -fr /tmp/*.lock
-
 
 # CREATE THE NECESSARY FOLDER STRUCTURE
 ####################################
@@ -241,8 +214,6 @@ if [ ! -d "/steamcmd/rust" ]; then
 	echo "Creating folder structure.."
 	mkdir -p /steamcmd/rust
 fi
-
-
 
 # INSTALL/UPDATE STEAMCMD
 ########################
@@ -260,7 +231,6 @@ if [ ! -z ${RUST_BRANCH+x} ]; then
 else
 	sed -i "s/app_update 258550.*validate/app_update 258550 validate/g" /install.txt
 fi
-
 
 #DISABLE AUTO-UPDATE IF START MODE IS 2
 ##################################
@@ -303,15 +273,10 @@ else
 	fi
 fi
 
-
-
-
 # TELL OS WERE 64-BIT VERSION OF STEAMCLIENT.SO IS
 ################################################
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/steamcmd/rust/RustDedicated_Data/Plugins/x86_64
-
-
 
 #CHECK IF OXIDE IS ENABLED
 ######################
@@ -348,8 +313,6 @@ if [ "$OXIDE" = "1" ]; then
 	fi
 fi
 
-
-
 # START MODE 1: ONLY UPDATES
 #########################
 
@@ -357,8 +320,6 @@ if [ "$STARTMODE" = "1" ]; then
 	echo "Exiting, start mode is 1.."
 	exit
 fi
-
-
 
 # ADD RCON SUPPORT IF NECESSARY
 ############################
@@ -386,7 +347,13 @@ if [ ! -z ${RCONWEB+x} ]; then
 	fi
 fi
 
-
+#SELECT MAP SEED
+###############
+if [ -z $MAPSEED ]; then
+echo "Warn: No MAPSEED set"
+else
+echo "Settimg MAPSEED to $MAPSEED"
+fi
 
 # CHECK IF A SPECIAL SEED OVERRIDE FILE EXISTS
 ######################################
@@ -398,8 +365,6 @@ if [ -f "/steamcmd/rust/seed_override" ]; then
 	# Modify the server identity to include the override seed
 	IDENTITY=$RUST_SEED_OVERRIDE
 	MAPSEED=$RUST_SEED_OVERRIDE
-
-
 
   # PREPARE THE IDENTITY DIRECTORY (IF NOT EXIST)
 
@@ -416,8 +381,6 @@ if [ -f "/steamcmd/rust/seed_override" ]; then
 		fi
 	fi
 fi
-
-
 
 ## DISABLE LOGROTATE IF "-LOGFILE" IS SET IN $RUST_STARTUP_COMMAND
 #########################################################
@@ -452,37 +415,26 @@ else
 	echo "Log rotation disabled!"
 fi
 
-
-
 # START CRON
 ###########
 
 echo "Starting scheduled task manager.."
 node /apps/scheduler_app/app.js &
 
-
-
 # SET THE WORKING DIRECTORY
 ########################
 
 cd /steamcmd/rust
-
-
 
 # RUN THE SERVER
 ###############
 
 echo "Starting Rust.."
 if [ "$LOGROTATE_ENABLED" = "1" ]; then 
-unbuffer /steamcmd/rust/RustDedicated -batchmode -load +server.port "$PORTFORWARD_RUST" +server.identity "$IDENTITY" +server.seed "$MAPSEED" +server.hostname "$NAME" +server.url "$WEBURL" +server.headerimage "$BANNER" +server.description "$DESCRIPTION" +server.worldsize "$MPSIZE" +server.maxplayers "$PLAYERS" +fps.limit "$FPS" +server.secure "$SECURE" +server.updatebatch "$UPDATEBATCH" +server.saveinterval "$SAVE_INTERVAL" +server.tickrate "$TICKRATE" +ai.tickrate "$AI_TICKRATE" server.port "$SERVERPORT" +server.pve "$PVE_" $RUST_STARTUP_COMMAND 2>&1 | grep --line-buffered -Ev '^\s*$|Filename' | tee $RUST_SERVER_LOG_FILE &
+unbuffer /steamcmd/rust/RustDedicated -batchmode -load +server.port "$PORTFORWARD_RUST" +server.identity "$IDENTITY" +server.seed "$MAPSEED" +server.hostname "$NAME" +server.url "$WEBURL" +server.headerimage "$BANNER" +server.description "$DESCRIPTION" +server.worldsize "$MAPSIZE" +server.maxplayers "$PLAYERS" +fps.limit "$FPS" +server.secure "$SECURE" +server.updatebatch "$UPDATEBATCH" +server.saveinterval "$SAVE_INTERVAL" +server.tickrate "$TICKRATE" +ai.tickrate "$AI_TICKRATE" server.port "$SERVERPORT" +server.pve "$PVE_" $RUST_STARTUP_COMMAND 2>&1 | grep --line-buffered -Ev '^\s*$|Filename' | tee $RUST_SERVER_LOG_FILE &
 else
-	/steamcmd/rust/RustDedicated -batchmode -load +server.port "$PORTFORWARD_RUST" +server.identity "$IDENTITY" +server.seed "$MAPSEED" +server.hostname "$NAME" +server.url "$WEBURL" +server.headerimage "$BANNER" +server.description "$DESCRIPTION" +server.worldsize "$MPSIZE" +server.maxplayers "$PLAYERS" +fps.limit "$FPS" +server.secure "$SECURE" +server.updatebatch "$UPDATEBATCH" +server.saveinterval "$SAVE_INTERVAL" +server.tickrate "$TICKRATE" +ai.tickrate "$AI_TICKRATE" server.port "$SERVERPORT" +server.pve "$PVE_" $RUST_STARTUP_COMMAND 2>&1 &
+	/steamcmd/rust/RustDedicated -batchmode -load +server.port "$PORTFORWARD_RUST" +server.identity "$IDENTITY" +server.seed "$MAPSEED" +server.hostname "$NAME" +server.url "$WEBURL" +server.headerimage "$BANNER" +server.description "$DESCRIPTION" +server.worldsize "$MAPSIZE" +server.maxplayers "$PLAYERS" +fps.limit "$FPS" +server.secure "$SECURE" +server.updatebatch "$UPDATEBATCH" +server.saveinterval "$SAVE_INTERVAL" +server.tickrate "$TICKRATE" +ai.tickrate "$AI_TICKRATE" server.port "$SERVERPORT" +server.pve "$PVE_" $RUST_STARTUP_COMMAND 2>&1 &
 fi
-
-
-
-
-
 
 child=$!
 wait "$child"
@@ -497,7 +449,6 @@ echo ""
 echo "Port forwarding has closed ports.."
 fi
 
-
 WIPED=$(</wipe)
 
 if [ "$WIPED" = "true" ]; then
@@ -506,11 +457,8 @@ find "${serveridentitydir:?}" -type f -name "proceduralmap.*.sav" -delete
 find "${serveridentitydir:?}" -type f -name "proceduralmap.*.map" -delete
 find "${serveridentitydir:?}" -type f -name "player.blueprints.*.db" -delete
 
-
 echo "SERVER HAS NOW BEEN WIPED"
-
-fi
-  
+fi  
 
 pkill -f nginx
 

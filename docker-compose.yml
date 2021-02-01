@@ -1,0 +1,56 @@
+version: "3.9"
+services:
+  rust-server:
+    image: drbrocoli/rust-server:latest
+    build: .
+    entrypoint: ./start.sh 
+    volumes:
+      - ./rust:/steamcmd/rust
+    ports:
+      - "3000:3000"
+      - "8080:8080"
+      - "28015:28015"
+      - "28016:28016"
+    environment: 
+      - PVE=0
+      - OXIDE=1
+      - PASSWORD=12345
+      - PORTFORWARD_RUST=28015
+      - AUTO=1
+      - WIPE_TITLE=0
+      - ARGUMENTS=
+      - ANNOUNCE5=
+      - TCP_PORT_28015=28015
+      - ANNOUNCE_DELAY=30
+      - TZ=America/New_York
+      - PORTFORWARD_RCON=28016
+      - UDP_PORT_28015=28015
+      - PORTFORWARD_WEB=8080
+      - NAME=rust-server
+      - ANNOUNCE3=
+      - MAPSIZE=4000
+      - ANNOUNCE2=
+      - TCP_PORT_8080=8080
+      - TCP_PORT_28016=28016
+      - PERFORMANCE=1
+      - DESCRIPTION=Welcome to Rust!
+      - BANNER=
+      - ANNOUNCE4=
+      - SAVE_INTERVAL=300
+      - MAPSEED=369
+      - HOST_OS=Unraid
+      - RELEASE=public
+      - ANNOUNCE1=
+      - IDENTITY=rust-server
+      - PUBLIC=0
+      - WIPEDAYS=7
+      - PLAYERS=50
+      - PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - GOSU_VERSION=1.10
+      - LANGUAGE=en_US.UTF-8
+      - LANG=en_US.utf8
+      - TERM=xterm
+      - PGID=1000
+      - PUID=1000
+      - WIPED_TITLE=
+      - WIPED=
